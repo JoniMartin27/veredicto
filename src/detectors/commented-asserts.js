@@ -30,7 +30,14 @@ const BLOCK_COMMENT = /^\s*\/\*+\s*(.*?)\s*\*+\/\s*$/;
 //   expect(...).toBe(...)   assert x == y   expect.equal(...)   x.should.equal
 // `should` is only treated as an assertion in its chai method form
 // (`.should.` / `should(` / `should.`), never as the plain English word.
-const ASSERT_CALL = /\bexpect\s*[(.]|\bassert\b\s*[(.]|\bassert\b\s+\w|\.should\.|\bshould\s*[(.]/;
+//
+// The bare Python `assert <expr>` form (`assert x == y`, `assert foo()`,
+// `assert obj.ok`) is only recognised when the asserted expression contains a
+// code token — an operator, paren, bracket, comma, or dot. Plain-English prose
+// like `// assert ordering is stable` carries the word "assert" followed only
+// by words and spaces, so it no longer trips the detector.
+const ASSERT_BARE_PY = /\bassert\b\s+\w[^\n]*[(.[\]=<>!+\-*/%&|,]/;
+const ASSERT_CALL = /\bexpect\s*[(.]|\bassert\b\s*[(.]|\.should\.|\bshould\s*[(.]/;
 
 function detect(files) {
   const findings = [];
@@ -55,7 +62,7 @@ function detect(files) {
       // Must mention an assertion keyword AND look like an assertion call,
       // not just prose that happens to use the word "should"/"assert".
       if (!ASSERT_KEYWORD.test(body)) continue;
-      if (!ASSERT_CALL.test(body)) continue;
+      if (!ASSERT_CALL.test(body) && !ASSERT_BARE_PY.test(body)) continue;
 
       findings.push({
         rule: 'commented-asserts',

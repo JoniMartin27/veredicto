@@ -100,3 +100,18 @@ test('prose comments mentioning the words are not flagged', () => {
   const findings = detector.detect(parseDiff(diff));
   assert.strictEqual(findings.length, 0);
 });
+
+test('prose using "assert" as a plain verb is not flagged', () => {
+  const diff = [
+    'diff --git a/src/util.js b/src/util.js',
+    '--- a/src/util.js',
+    '+++ b/src/util.js',
+    '@@ -1,3 +1,3 @@',
+    '+  // assert ordering is stable across runs',
+    '+  // this should not assert anything yet',
+    '+  # assert callers always pass a valid token',
+  ].join('\n');
+
+  const findings = detector.detect(parseDiff(diff));
+  assert.strictEqual(findings.length, 0);
+});
