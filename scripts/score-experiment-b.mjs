@@ -71,6 +71,9 @@ const N = results.length;
 const fc = results.filter((r) => r.falseConfidence);
 const caught = results.filter((r) => r.caughtBug);
 const flagged = results.filter((r) => r.findings.length > 0);
+// "Pinned the bug": suite is green on buggy code AND fails on correct code —
+// i.e. it asserts the buggy output as expected, so fixing the bug turns it red.
+const pinned = results.filter((r) => r.falseConfidence && r.greenCorrect === false);
 const byRule = {};
 for (const r of results) for (const f of r.findings) byRule[f.rule] = (byRule[f.rule] || 0) + 1;
 const pct = (n) => Math.round((n / N) * 100);
@@ -90,8 +93,11 @@ out.push('## Headline\n');
 out.push(`| Metric | Result |`);
 out.push(`| --- | ---: |`);
 out.push(`| Suites that passed despite the bug (**false confidence**) | ${fc.length}/${N} (${pct(fc.length)}%) |`);
+out.push(`| Suites that **pinned the bug** (assert buggy output → fixing it turns them red) | ${pinned.length}/${N} (${pct(pinned.length)}%) |`);
 out.push(`| Suites that caught the bug | ${caught.length}/${N} (${pct(caught.length)}%) |`);
 out.push(`| Suites Veredicto flagged statically | ${flagged.length}/${N} (${pct(flagged.length)}%) |`);
+out.push('\n## What this says about static detection (honest)\n');
+out.push('These are pure-logic modules with no dependencies, so the failure mode is **implementation-mirroring** — the suite asserts the *current (buggy) output* as "correct". That is **semantic**, not syntactic: there is no deleted test, no `.skip`, no tautology, no mock to see in the diff, so static rules (free Veredicto) correctly flag 0. Catching this needs the **contract**, which is what the Pro diff-vs-claim judge (and, heavier, mutation testing) checks. Veredicto\'s free static layer targets the *blatant* gaming (deletes/skips/over-mocks/tautologies/relaxed thresholds), proven low-noise on real PRs; this experiment is the case for the semantic Pro layer.');
 out.push('\n## Veredicto findings by rule\n');
 out.push('| Rule | Suites |');
 out.push('| --- | ---: |');
