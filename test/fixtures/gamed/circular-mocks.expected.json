@@ -1,0 +1,7 @@
+{
+  "description": "The test mocks the very module under test and then asserts on the mock, never exercising the real code.",
+  "trick": "circular-mocks",
+  "minFindings": 1,
+  "expectRules": { "circular-mocks": 1 },
+  "cleanExpectedZero": false
+}

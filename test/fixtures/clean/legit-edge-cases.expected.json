@@ -1,0 +1,5 @@
+{
+  "description": "Near-miss edge cases that must NOT fire: a tiny snapshot tweak, '|| true' on a non-test rm command, an empty catch around JSON.parse with no assertion, and mocking a dependency (payment-gateway) rather than the module under test (checkout).",
+  "minFindings": 0,
+  "cleanExpectedZero": true
+}

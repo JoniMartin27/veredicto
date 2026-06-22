@@ -3,14 +3,16 @@
 /**
  * Veredicto — GitHub Action entrypoint.
  *
- * Reads the pull-request diff, runs the static test-gaming detectors, emits
- * GitHub annotations + a job summary, and (in block mode) fails the check.
+ * Reads the pull-request diff, runs the static test-gaming detectors (loaded as
+ * plugins from src/detectors/), applies inline suppressions, emits GitHub
+ * annotations + a job summary, exposes outputs, and (in block mode) fails.
  * Zero dependencies: only Node built-ins + git already on the runner.
  */
 
 const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
-const { analyze } = require('./detectors');
+const { analyze } = require('./registry');
+const { parseDiff } = require('./diff');
 
 function input(name, def) {
   const v = process.env['INPUT_' + name.toUpperCase().replace(/-/g, '_')];
@@ -26,6 +28,17 @@ function git(args) {
 }
 
 function getDiff() {
+  // Optional GitLab CI source (best-effort; never fatal).
+  if (process.env.GITLAB_CI) {
+    try {
+      const gl = require('./ci/gitlab');
+      const d = gl && typeof gl.getDiff === 'function' ? gl.getDiff() : '';
+      if (d && d.trim()) return d;
+    } catch {
+      /* no gitlab adapter or it failed — fall through to git */
+    }
+  }
+
   const eventPath = process.env.GITHUB_EVENT_PATH;
   let base, head;
   if (eventPath && fs.existsSync(eventPath)) {
@@ -47,6 +60,51 @@ function getDiff() {
   }
   // Fallback: last commit.
   return git(['diff', '--unified=0', 'HEAD~1..HEAD']);
+}
+
+/**
+ * Drop findings suppressed by an inline comment on the line directly above.
+ * Recognized (in any added line whose content includes the directive):
+ *   veredicto-disable-next-line <rule>   → suppress <rule> on the next line
+ *   veredicto-disable <rule>             → suppress <rule> on the next line
+ *   ... with no <rule>                   → suppress ALL rules on the next line
+ * Suppression keys off (file, line, rule) using the diff's added lines.
+ */
+function applySuppressions(findings, diff) {
+  const files = parseDiff(diff);
+  // Map: file -> (suppressedLine -> Set<rule> | '*')
+  const suppress = new Map();
+  const DIRECTIVE = /veredicto-disable(?:-next-line)?(?:\s+([a-z0-9-]+))?/i;
+  for (const f of files) {
+    for (const a of f.added) {
+      const m = DIRECTIVE.exec(a.content);
+      if (!m) continue;
+      const target = a.line + 1; // applies to the next line in the new file
+      let perFile = suppress.get(f.file);
+      if (!perFile) {
+        perFile = new Map();
+        suppress.set(f.file, perFile);
+      }
+      const existing = perFile.get(target);
+      if (m[1]) {
+        if (existing === '*') continue;
+        const set = existing instanceof Set ? existing : new Set();
+        set.add(m[1].toLowerCase());
+        perFile.set(target, set);
+      } else {
+        perFile.set(target, '*'); // bare directive suppresses everything
+      }
+    }
+  }
+  if (!suppress.size) return findings;
+  return findings.filter((f) => {
+    const perFile = suppress.get(f.file);
+    if (!perFile) return true;
+    const rules = perFile.get(f.line);
+    if (!rules) return true;
+    if (rules === '*') return false;
+    return !rules.has(String(f.rule).toLowerCase());
+  });
 }
 
 function annotate(f) {
@@ -82,10 +140,19 @@ function main() {
     console.log('Veredicto: empty diff, nothing to analyze.');
     return;
   }
-  const findings = analyze(diff);
+  let findings = analyze(diff);
+  findings = applySuppressions(findings, diff);
 
   for (const f of findings) annotate(f);
   summary(findings);
+
+  // Best-effort PR comment (only if the optional reporter is present).
+  try {
+    const reporter = require('./report/pr-comment');
+    if (reporter && typeof reporter.post === 'function') reporter.post(findings);
+  } catch {
+    /* no reporter module, or it failed — never fatal */
+  }
 
   const errors = findings.filter((f) => f.severity === 'error').length;
   console.log(`Veredicto: ${findings.length} signal(s) (${errors} hard, ${findings.length - errors} soft).`);

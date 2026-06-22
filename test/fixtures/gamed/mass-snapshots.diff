@@ -1,0 +1,40 @@
+diff --git a/test/__snapshots__/widget.test.js.snap b/test/__snapshots__/widget.test.js.snap
+--- a/test/__snapshots__/widget.test.js.snap
++++ b/test/__snapshots__/widget.test.js.snap
+@@ -1,12 +1,24 @@
+-exports[`Widget renders 1`] = `<div>old1</div>`;
+-exports[`Widget renders 2`] = `<div>old2</div>`;
+-exports[`Widget renders 3`] = `<div>old3</div>`;
+-exports[`Widget renders 4`] = `<div>old4</div>`;
+-exports[`Widget renders 5`] = `<div>old5</div>`;
+-exports[`Widget renders 6`] = `<div>old6</div>`;
+-exports[`Widget renders 7`] = `<div>old7</div>`;
+-exports[`Widget renders 8`] = `<div>old8</div>`;
+-exports[`Widget renders 9`] = `<div>old9</div>`;
+-exports[`Widget renders 10`] = `<div>old10</div>`;
+-exports[`Widget renders 11`] = `<div>old11</div>`;
+-exports[`Widget renders 12`] = `<div>old12</div>`;
++exports[`Widget renders 1`] = `<div>new1</div>`;
++exports[`Widget renders 2`] = `<div>new2</div>`;
++exports[`Widget renders 3`] = `<div>new3</div>`;
++exports[`Widget renders 4`] = `<div>new4</div>`;
++exports[`Widget renders 5`] = `<div>new5</div>`;
++exports[`Widget renders 6`] = `<div>new6</div>`;
++exports[`Widget renders 7`] = `<div>new7</div>`;
++exports[`Widget renders 8`] = `<div>new8</div>`;
++exports[`Widget renders 9`] = `<div>new9</div>`;
++exports[`Widget renders 10`] = `<div>new10</div>`;
++exports[`Widget renders 11`] = `<div>new11</div>`;
++exports[`Widget renders 12`] = `<div>new12</div>`;
++exports[`Widget renders 13`] = `<div>new13</div>`;
++exports[`Widget renders 14`] = `<div>new14</div>`;
++exports[`Widget renders 15`] = `<div>new15</div>`;
++exports[`Widget renders 16`] = `<div>new16</div>`;
++exports[`Widget renders 17`] = `<div>new17</div>`;
++exports[`Widget renders 18`] = `<div>new18</div>`;
++exports[`Widget renders 19`] = `<div>new19</div>`;
++exports[`Widget renders 20`] = `<div>new20</div>`;
++exports[`Widget renders 21`] = `<div>new21</div>`;
++exports[`Widget renders 22`] = `<div>new22</div>`;
++exports[`Widget renders 23`] = `<div>new23</div>`;
++exports[`Widget renders 24`] = `<div>new24</div>`;

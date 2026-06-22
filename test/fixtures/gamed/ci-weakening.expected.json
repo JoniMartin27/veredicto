@@ -1,0 +1,7 @@
+{
+  "description": "continue-on-error: true is added to the CI test step so a failing build merges anyway.",
+  "trick": "ci-weakening",
+  "minFindings": 1,
+  "expectRules": { "ci-weakening": 1 },
+  "cleanExpectedZero": false
+}

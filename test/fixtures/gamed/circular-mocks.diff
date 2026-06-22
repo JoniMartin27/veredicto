@@ -1,0 +1,14 @@
+diff --git a/test/payment.test.js b/test/payment.test.js
+--- a/test/payment.test.js
++++ b/test/payment.test.js
+@@ -1,6 +1,11 @@
+ const { processPayment } = require('../src/payment');
++jest.mock('../src/payment');
++const paymentMock = require('../src/payment');
+
+ describe('payment', () => {
++  it('processes a payment', () => {
++    processPayment({ amount: 10 });
++    expect(paymentMock.processPayment).toHaveBeenCalled();
++  });
+ });

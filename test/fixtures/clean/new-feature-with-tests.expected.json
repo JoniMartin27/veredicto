@@ -1,0 +1,5 @@
+{
+  "description": "A new feature shipped together with a real test that asserts an exact value. Nothing should fire.",
+  "minFindings": 0,
+  "cleanExpectedZero": true
+}

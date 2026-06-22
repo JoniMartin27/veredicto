@@ -1,0 +1,7 @@
+{
+  "description": "A failing assertion is commented out so the test stays green.",
+  "trick": "commented-asserts",
+  "minFindings": 1,
+  "expectRules": { "commented-asserts": 1 },
+  "cleanExpectedZero": false
+}

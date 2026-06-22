@@ -1,0 +1,7 @@
+{
+  "description": "A snapshot file is bulk re-baselined (36 churn lines) instead of reviewing the change.",
+  "trick": "mass-snapshots",
+  "minFindings": 1,
+  "expectRules": { "mass-snapshots": 1 },
+  "cleanExpectedZero": false
+}

@@ -6,7 +6,7 @@
   "author": "Jonathan Martín (Fervon)",
   "homepage": "https://fervon.dev/veredicto/",
   "repository": { "type": "git", "url": "git+https://github.com/JoniMartin27/veredicto.git" },
-  "keywords": ["test-gaming", "ci", "github-action", "ai-agents", "test-integrity", "reward-hacking", "code-review"],
+  "keywords": ["test-gaming", "ci", "github-action", "gitlab-ci", "ai-agents", "test-integrity", "reward-hacking", "code-review", "static-analysis", "pull-request"],
   "main": "src/index.js",
   "scripts": {
     "test": "node --test"

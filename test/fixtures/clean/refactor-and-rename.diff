@@ -1,0 +1,24 @@
+diff --git a/test/order.test.js b/test/order.test.js
+--- a/test/order.test.js
++++ b/test/order.test.js
+@@ -1,10 +1,12 @@
+ // This suite should cover the happy path; we assert the final total below.
+ // Note: the shipping rule changed, so the expectation is updated accordingly.
+ describe('order', () => {
+-  it('computes the total', () => {
+-    expect(orderTotal(items)).toBe(30);
++  it('computes the order total including shipping', () => {
++    expect(orderTotal(items)).toBe(35);
+   });
+ });
+diff --git a/jest.config.js b/jest.config.js
+--- a/jest.config.js
++++ b/jest.config.js
+@@ -4,7 +4,7 @@ module.exports = {
+   coverageThreshold: {
+     global: {
+-      branches: 80,
++      branches: 90,
+     },
+   },
+ };

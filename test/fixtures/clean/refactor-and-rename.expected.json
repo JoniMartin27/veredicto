@@ -1,0 +1,5 @@
+{
+  "description": "A test is renamed (net zero test cases), its expected value updated for a real rule change, prose comments mention 'should'/'assert', and a coverage threshold is RAISED. None of these are gaming.",
+  "minFindings": 0,
+  "cleanExpectedZero": true
+}

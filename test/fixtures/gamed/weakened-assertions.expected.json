@@ -1,0 +1,7 @@
+{
+  "description": "A strict toBe(42) assertion is weakened to toBeTruthy(), so the exact value is no longer checked.",
+  "trick": "weakened-assertions",
+  "minFindings": 1,
+  "expectRules": { "weakened-assertions": 1 },
+  "cleanExpectedZero": false
+}

@@ -1,0 +1,29 @@
+# Veredicto — WARN mode (recommended starting point).
+#
+# Copy this file to .github/workflows/veredicto.yml in your repository.
+# In `warn` mode Veredicto annotates the PR with everything it finds but never
+# fails the check, so it can never block a merge. Start here, build trust in the
+# signal, then graduate to block mode (see veredicto-block.yml).
+
+name: Veredicto
+
+on:
+  pull_request:
+
+# Least-privilege: only needs to read the code and write check annotations.
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  veredicto:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history is required to diff base..head
+
+      - uses: JoniMartin27/veredicto@v0
+        with:
+          mode: warn # comment only; never blocks the merge

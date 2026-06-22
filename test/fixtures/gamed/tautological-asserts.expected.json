@@ -1,0 +1,7 @@
+{
+  "description": "A real assertion is replaced by expect(true).toBe(true) and an empty test body is added.",
+  "trick": "tautological-asserts",
+  "minFindings": 1,
+  "expectRules": { "tautological-asserts": 2 },
+  "cleanExpectedZero": false
+}

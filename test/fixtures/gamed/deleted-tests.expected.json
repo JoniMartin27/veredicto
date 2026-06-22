@@ -1,0 +1,7 @@
+{
+  "description": "Two failing test cases are deleted with no replacement so the suite passes.",
+  "trick": "deleted-tests",
+  "minFindings": 1,
+  "expectRules": { "deleted-tests": 1 },
+  "cleanExpectedZero": false
+}

@@ -1,0 +1,7 @@
+{
+  "description": "Coverage thresholds are lowered across the board to make a failing gate pass.",
+  "trick": "relaxed-thresholds",
+  "minFindings": 1,
+  "expectRules": { "relaxed-thresholds": 4 },
+  "cleanExpectedZero": false
+}

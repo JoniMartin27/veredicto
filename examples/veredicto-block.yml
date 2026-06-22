@@ -1,0 +1,32 @@
+# Veredicto — BLOCK mode (enforcing).
+#
+# Copy this file to .github/workflows/veredicto.yml in your repository.
+# In `block` mode Veredicto FAILS the check whenever it finds a hard (`error`)
+# signal — deleted tests, tautological asserts, lowered coverage gates, disarmed
+# CI, forced-success error swallowing. Soft (`warning`) signals are annotated but
+# never block. Adopt this only after running `warn` for a while.
+#
+# To make this a required gate, add the "veredicto" check to your branch
+# protection rules (Settings -> Branches -> Require status checks to pass).
+
+name: Veredicto
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  veredicto:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history is required to diff base..head
+
+      - uses: JoniMartin27/veredicto@v0
+        with:
+          mode: block # fail the check on hard (error) signals

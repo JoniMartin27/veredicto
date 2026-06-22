@@ -1,0 +1,7 @@
+{
+  "description": "The test command is piped to || true so its non-zero exit is swallowed.",
+  "trick": "error-swallowing",
+  "minFindings": 1,
+  "expectRules": { "error-swallowing": 1 },
+  "cleanExpectedZero": false
+}

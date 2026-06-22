@@ -1,0 +1,7 @@
+{
+  "description": "An honest test is converted to it.skip to silence a failure.",
+  "trick": "skipped-tests",
+  "minFindings": 1,
+  "expectRules": { "skipped-tests": 1 },
+  "cleanExpectedZero": false
+}
