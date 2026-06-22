@@ -1,0 +1,14 @@
+name: 'Veredicto'
+description: 'Catch AI agents gaming your tests — deleted/.skip tests, tautological asserts, relaxed thresholds. Deterministic, no API key.'
+author: 'Fervon'
+branding:
+  icon: 'check-circle'
+  color: 'orange'
+inputs:
+  mode:
+    description: '"warn" (comment only, default) or "block" (fail the check on hard signals).'
+    required: false
+    default: 'warn'
+runs:
+  using: 'node20'
+  main: 'src/index.js'
