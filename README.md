@@ -59,6 +59,11 @@ Add a step to your PR workflow:
 name: Veredicto
 on: pull_request
 
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
 jobs:
   veredicto:
     runs-on: ubuntu-latest
@@ -69,6 +74,9 @@ jobs:
       - uses: JoniMartin27/veredicto@v0
         with:
           mode: warn              # "warn" (default, comment only) or "block"
+        env:
+          # Required for the sticky PR comment; without it the reporter is skipped.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 - **`warn`** (default): annotates the PR with what it found; never blocks.
