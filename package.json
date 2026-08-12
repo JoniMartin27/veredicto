@@ -1,15 +1,31 @@
 {
   "name": "veredicto",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "The CI check that catches when an AI agent games your tests — deterministic, no API key.",
   "license": "MIT",
   "author": "Jonathan Martín (Fervon)",
   "homepage": "https://fervon.dev/veredicto/",
-  "repository": { "type": "git", "url": "git+https://github.com/JoniMartin27/veredicto.git" },
-  "keywords": ["test-gaming", "ci", "github-action", "gitlab-ci", "ai-agents", "test-integrity", "reward-hacking", "code-review", "static-analysis", "pull-request"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JoniMartin27/veredicto.git"
+  },
+  "keywords": [
+    "test-gaming",
+    "ci",
+    "github-action",
+    "gitlab-ci",
+    "ai-agents",
+    "test-integrity",
+    "reward-hacking",
+    "code-review",
+    "static-analysis",
+    "pull-request"
+  ],
   "main": "src/index.js",
   "scripts": {
     "test": "node --test"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  }
 }

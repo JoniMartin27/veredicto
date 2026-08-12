@@ -3,6 +3,21 @@
 All notable changes to Veredicto. Dates are ISO. The `v0` tag always points at the latest
 `v0.x` release, so `uses: JoniMartin27/veredicto@v0` picks these up automatically.
 
+## [0.3.1] — 2026-08-12
+
+### Fixed
+
+- **A real race in the test suite, not a flake.** `test/architecture.test.js` wrote a
+  temporary detector into the shipped `src/detectors/` folder. `node --test` runs test
+  files in parallel processes and the registry re-reads that folder on every `analyze()`
+  call, so another test process could either pick up the ghost detector or die with
+  `ENOENT` on a file that had just been unlinked. Reproduced deterministically with two
+  processes: 28 crashes and 4,911 phantom findings on a clean diff in six seconds. The
+  test now loads its plugin from a temp directory, and a guard test fails the build if
+  anything ever writes into `src/detectors/` again.
+- `loadDetectors()` / `analyze()` take an optional directory, and a detector file that
+  cannot be required is skipped instead of taking the whole run down.
+
 ## [0.3.0] — 2026-08-12
 
 The first release driven by an end-to-end audit: a throwaway git repository, a realistic

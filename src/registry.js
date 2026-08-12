@@ -48,18 +48,35 @@ const { parseDiff } = require('./diff');
 
 const DETECTORS_DIR = path.join(__dirname, 'detectors');
 
-/** Load all detector plugins from src/detectors/. Tolerates an empty dir. */
-function loadDetectors() {
+/**
+ * Load all detector plugins from a directory (src/detectors/ by default).
+ * Tolerates a missing or empty directory.
+ *
+ * `dir` is a parameter so tests can load a plugin from a temporary directory
+ * instead of writing into the shipped `src/detectors/`. Writing there is a real
+ * hazard, not a style preference: `node --test` runs test files in PARALLEL
+ * PROCESSES and this function re-reads the directory on every call, so a test
+ * that drops a file in it can make another test process either pick up a ghost
+ * detector or blow up with ENOENT on a file that was just unlinked.
+ *
+ * @param {string} [dir]  Directory to load detectors from.
+ */
+function loadDetectors(dir = DETECTORS_DIR) {
   let entries = [];
   try {
-    entries = fs.readdirSync(DETECTORS_DIR);
+    entries = fs.readdirSync(dir);
   } catch {
     return [];
   }
   const detectors = [];
   for (const name of entries) {
     if (!name.endsWith('.js')) continue;
-    const mod = require(path.join(DETECTORS_DIR, name));
+    let mod;
+    try {
+      mod = require(path.join(dir, name));
+    } catch {
+      continue; // unreadable or vanished mid-read — never take the whole run down
+    }
     if (mod && typeof mod.detect === 'function') detectors.push(mod);
   }
   return detectors;
@@ -68,11 +85,12 @@ function loadDetectors() {
 /**
  * Parse a raw diff and run every registered detector against it.
  * @param {string} diff  Raw unified diff text.
+ * @param {string} [dir]  Detector directory; defaults to src/detectors/.
  * @returns {Array<Finding>}  Concatenated findings from all detectors.
  */
-function analyze(diff) {
+function analyze(diff, dir) {
   const files = parseDiff(diff);
-  const detectors = loadDetectors();
+  const detectors = loadDetectors(dir);
   const findings = [];
   for (const d of detectors) {
     const out = d.detect(files);

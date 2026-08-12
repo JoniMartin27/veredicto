@@ -45,23 +45,40 @@ test('registry.analyze tolerates an empty detectors directory', () => {
 });
 
 test('registry auto-loads a detector plugin and concatenates its findings', () => {
-  const dir = path.join(__dirname, '..', 'src', 'detectors');
-  const tmpName = `__test_plugin_${process.pid}.js`;
-  const tmpPath = path.join(dir, tmpName);
+  // The plugin goes in a TEMPORARY directory, never in src/detectors/.
+  // `node --test` runs test files in parallel processes and the registry
+  // re-reads its directory on every analyze() call, so writing into the shipped
+  // folder makes other test processes see a ghost detector or crash with ENOENT
+  // on a file this test just unlinked. That was a real, reproducible flake.
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'veredicto-plugin-'));
+  const tmpPath = path.join(dir, '__test_plugin.js');
   fs.writeFileSync(
     tmpPath,
     "module.exports={rule:'test-plugin',detect(files){return files.map(f=>({rule:'test-plugin',severity:'warning',file:f.file,line:1,message:'hit'}));}};"
   );
   try {
-    const detectors = loadDetectors();
+    const detectors = loadDetectors(dir);
+    assert.equal(detectors.length, 1);
     assert.ok(detectors.some((d) => d.rule === 'test-plugin'));
-    const findings = analyze(diffFor('src/a.js', ['x();']));
+    const findings = analyze(diffFor('src/a.js', ['x();']), dir);
     assert.equal(findings.length, 1);
     assert.equal(findings[0].rule, 'test-plugin');
     assert.equal(findings[0].file, 'src/a.js');
   } finally {
-    fs.unlinkSync(tmpPath);
+    fs.rmSync(dir, { recursive: true, force: true });
   }
+});
+
+test('loadDetectors tolerates a directory that does not exist', () => {
+  assert.deepEqual(loadDetectors(path.join(os.tmpdir(), 'veredicto-nope-' + process.pid)), []);
+});
+
+test('the shipped detectors directory is never written to by the tests', () => {
+  const dir = path.join(__dirname, '..', 'src', 'detectors');
+  const stray = fs
+    .readdirSync(dir)
+    .filter((n) => n.endsWith('.js') && !/^[a-z][a-z0-9-]*\.js$/.test(n));
+  assert.deepEqual(stray, [], `stray files in src/detectors/: ${stray.join(', ')}`);
 });
 
 test('detectors directory exists with a .gitkeep', () => {
