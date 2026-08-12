@@ -1,0 +1,21 @@
+# Veredicto on GitLab CI.
+#
+# Copy this job into your .gitlab-ci.yml. In a merge-request pipeline Veredicto
+# reads CI_MERGE_REQUEST_DIFF_BASE_SHA and diffs base..HEAD automatically — no
+# extra configuration.
+#
+# Annotations are a GitHub Actions feature, so on GitLab the findings arrive as
+# job log lines and (in block mode) the exit code.
+
+veredicto:
+  image: node:20
+  stage: test
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+  variables:
+    # Full history: the base commit must exist locally to diff against it.
+    GIT_DEPTH: 0
+  script:
+    - git clone --depth 1 https://github.com/JoniMartin27/veredicto.git /tmp/veredicto
+    # INPUT_MODE=warn annotates only; INPUT_MODE=block exits 1 on hard signals.
+    - INPUT_MODE=warn node /tmp/veredicto/src/index.js

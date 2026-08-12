@@ -73,3 +73,50 @@ test('negative: tautology in NON-test file is ignored', () => {
 test('negative: commented-out tautology is ignored', () => {
   assert.strictEqual(run('a.test.js', ['// expect(true).toBe(true)']).length, 0);
 });
+
+// --- node:assert family (the idiom the whole `node --test` ecosystem uses) ---
+
+test('positive: flags node:assert equality with the same literal on both sides', () => {
+  assert.strictEqual(run('a.test.js', ['assert.strictEqual(true, true);']).length, 1);
+  assert.strictEqual(run('a.test.js', ['assert.equal(1, 1);']).length, 1);
+  assert.strictEqual(run('a.test.js', ['assert.deepStrictEqual("x", "x");']).length, 1);
+  assert.strictEqual(run('a.test.js', ['  assert.deepEqual(`x`, `x`, "msg");']).length, 1);
+});
+
+test('positive: flags assert.ok on a constant truthy value', () => {
+  assert.strictEqual(run('a.test.js', ['assert.ok(true);']).length, 1);
+  assert.strictEqual(run('a.test.js', ['assert.ok(1, "always");']).length, 1);
+});
+
+test('negative: node:assert against a real value never fires', () => {
+  assert.strictEqual(run('a.test.js', ['assert.strictEqual(total, 20);']).length, 0);
+  assert.strictEqual(run('a.test.js', ['assert.equal(1, 2);']).length, 0);
+  assert.strictEqual(run('a.test.js', ['assert.ok(user.isActive);']).length, 0);
+});
+
+test('negative: notStrictEqual with equal literals is a FAILING test, not a tautology', () => {
+  assert.strictEqual(run('a.test.js', ['assert.notStrictEqual(true, true);']).length, 0);
+});
+
+// --- multi-line empty body ---
+
+test('positive: empty test body split across lines is a warning', () => {
+  const f = run('a.test.js', ['test("does nothing", () => {', '});']);
+  assert.strictEqual(f.length, 1);
+  assert.strictEqual(f[0].severity, 'warning');
+});
+
+test('positive: empty body with a blank line inside still fires', () => {
+  assert.strictEqual(run('a.test.js', ['it("does nothing", () => {', '', '});']).length, 1);
+});
+
+test('negative: a body with real content is not empty', () => {
+  assert.strictEqual(
+    run('a.test.js', ['it("adds", () => {', '  expect(add(1, 2)).toBe(3);', '});']).length,
+    0
+  );
+});
+
+test('negative: an open body whose closing line is not in the diff stays quiet', () => {
+  assert.strictEqual(run('a.test.js', ['it("adds", () => {']).length, 0);
+});

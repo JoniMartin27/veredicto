@@ -80,3 +80,64 @@ test('does NOT flag changes to non-test source files', () => {
   const findings = detector.detect(parseDiff(diff));
   assert.equal(findings.length, 0);
 });
+
+test('a test MOVED to another file in the same diff is not a deletion', () => {
+  const diff = `diff --git a/test/cart.test.js b/test/cart.test.js
+--- a/test/cart.test.js
++++ b/test/cart.test.js
+@@ -1,5 +1,2 @@
+ describe('cart', () => {
+-  it('rejects an out-of-range percentage', () => {
+-    expect(() => discount(100, 150)).toThrow(RangeError);
+-  });
+ });
+diff --git a/test/checkout.test.js b/test/checkout.test.js
+--- a/test/checkout.test.js
++++ b/test/checkout.test.js
+@@ -1,2 +1,5 @@
+ describe('checkout', () => {
++  it('rejects an out-of-range percentage', () => {
++    expect(() => discount(100, 150)).toThrow(RangeError);
++  });
+ });
+`;
+  assert.equal(detector.detect(parseDiff(diff)).length, 0);
+});
+
+test('a test deleted while a DIFFERENT one is added elsewhere is still a deletion', () => {
+  const diff = `diff --git a/test/cart.test.js b/test/cart.test.js
+--- a/test/cart.test.js
++++ b/test/cart.test.js
+@@ -1,5 +1,2 @@
+-  it('rejects an out-of-range percentage', () => {
+-    expect(() => discount(100, 150)).toThrow(RangeError);
+-  });
+diff --git a/test/checkout.test.js b/test/checkout.test.js
+--- a/test/checkout.test.js
++++ b/test/checkout.test.js
+@@ -1,2 +1,5 @@
++  it('totals an empty cart', () => {
++    expect(subtotal([])).toBe(0);
++  });
+`;
+  const findings = detector.detect(parseDiff(diff));
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0].file, 'test/cart.test.js');
+});
+
+test('python test functions moved between modules are not deletions', () => {
+  const diff = `diff --git a/test_cart.py b/test_cart.py
+--- a/test_cart.py
++++ b/test_cart.py
+@@ -1,3 +1,1 @@
+-def test_discount_rejects_out_of_range():
+-    assert discount(100, 150) is None
+diff --git a/test_checkout.py b/test_checkout.py
+--- a/test_checkout.py
++++ b/test_checkout.py
+@@ -1,1 +1,3 @@
++def test_discount_rejects_out_of_range():
++    assert discount(100, 150) is None
+`;
+  assert.equal(detector.detect(parseDiff(diff)).length, 0);
+});

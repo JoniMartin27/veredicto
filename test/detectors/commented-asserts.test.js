@@ -115,3 +115,29 @@ test('prose using "assert" as a plain verb is not flagged', () => {
   const findings = detector.detect(parseDiff(diff));
   assert.strictEqual(findings.length, 0);
 });
+
+test('prose that merely ends in a period is not an assertion', () => {
+  const diff = [
+    'diff --git a/src/cart.js b/src/cart.js',
+    '--- a/src/cart.js',
+    '+++ b/src/cart.js',
+    '@@ -1,3 +1,3 @@',
+    '+// The caller should assert the result is finite before display.',
+    '+// We assert nothing here on purpose.',
+    '+# assert the queue drains before shutdown.',
+  ].join('\n');
+  assert.strictEqual(detector.detect(parseDiff(diff)).length, 0);
+});
+
+test('a real bare assert with code in it is still flagged', () => {
+  const diff = [
+    'diff --git a/test_api.py b/test_api.py',
+    '--- a/test_api.py',
+    '+++ b/test_api.py',
+    '@@ -1,3 +1,3 @@',
+    '+    # assert response.status == 200',
+    '+    # assert is_valid(token)',
+    '+    # assert items[0].ok',
+  ].join('\n');
+  assert.strictEqual(detector.detect(parseDiff(diff)).length, 3);
+});

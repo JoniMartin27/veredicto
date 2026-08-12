@@ -33,10 +33,17 @@ const BLOCK_COMMENT = /^\s*\/\*+\s*(.*?)\s*\*+\/\s*$/;
 //
 // The bare Python `assert <expr>` form (`assert x == y`, `assert foo()`,
 // `assert obj.ok`) is only recognised when the asserted expression contains a
-// code token — an operator, paren, bracket, comma, or dot. Plain-English prose
-// like `// assert ordering is stable` carries the word "assert" followed only
-// by words and spaces, so it no longer trips the detector.
-const ASSERT_BARE_PY = /\bassert\b\s+\w[^\n]*[(.[\]=<>!+\-*/%&|,]/;
+// token that can only be code:
+//   - a comparison operator            assert x == y, assert n >= 3
+//   - a call attached to an identifier assert foo(), assert is_valid(u)
+//   - attribute access between words   assert obj.ok, assert r.status
+//   - indexing attached to an identifier   assert items[0]
+// Crucially the token must be ATTACHED to a word. An English sentence that
+// merely ends in a period — `// The caller should assert the total is right.`
+// — has a lone `.` after a word but nothing after it, so it is not code and no
+// longer trips the detector.
+const CODE_TOKEN = /[=!<>]=|[<>]|\w\(|\w\.\w|\w\[/;
+const ASSERT_BARE_PY = /\bassert\b\s+(\w[^\n]*)$/;
 const ASSERT_CALL = /\bexpect\s*[(.]|\bassert\b\s*[(.]|\.should\.|\bshould\s*[(.]/;
 
 function detect(files) {
@@ -62,7 +69,9 @@ function detect(files) {
       // Must mention an assertion keyword AND look like an assertion call,
       // not just prose that happens to use the word "should"/"assert".
       if (!ASSERT_KEYWORD.test(body)) continue;
-      if (!ASSERT_CALL.test(body) && !ASSERT_BARE_PY.test(body)) continue;
+      const bare = ASSERT_BARE_PY.exec(body);
+      const looksLikeCode = ASSERT_CALL.test(body) || (bare !== null && CODE_TOKEN.test(bare[1]));
+      if (!looksLikeCode) continue;
 
       findings.push({
         rule: 'commented-asserts',

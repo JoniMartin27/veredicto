@@ -1,0 +1,81 @@
+# Changelog
+
+All notable changes to Veredicto. Dates are ISO. The `v0` tag always points at the latest
+`v0.x` release, so `uses: JoniMartin27/veredicto@v0` picks these up automatically.
+
+## [0.3.0] — 2026-08-12
+
+The first release driven by an end-to-end audit: a throwaway git repository, a realistic
+project, and one commit per gaming technique, run through the real Action entrypoint. It
+found four things wrong. All four are fixed here, each with regression tests.
+
+### Added
+
+- **New detector `gutted-tests`** (soft). Flags a test file whose **assertions** were
+  removed while the **test cases stayed** — the suite reports the same number of green
+  tests and checks nothing. This was a hole, not a gap: the diff is a pure deletion, so
+  `deleted-tests` (which counts declarations) saw nothing and `tautological-asserts` (which
+  reads added lines) had nothing to read. Emptying a test body produced **zero** signals
+  before this release.
+- `tautological-asserts` now understands the **`node:assert` family**:
+  `assert.strictEqual(true, true)`, `assert.equal(1, 1)`, `assert.deepStrictEqual("x", "x")`,
+  `assert.ok(true)`. Previously it only knew `expect(...)`, `assert(true)` and Python
+  `assert True`, so it was effectively blind on every project using `node --test`.
+  `assert.notStrictEqual(true, true)` is correctly *not* flagged — that assertion fails.
+- `tautological-asserts` now catches the **multi-line empty test body**, the form an agent
+  actually writes:
+  ```js
+  test('does the thing', () => {
+  });
+  ```
+- **Documentation set** for first contact through last detail: [getting
+  started](docs/GETTING-STARTED.md), [configuration reference](docs/CONFIGURATION.md),
+  [limitations](docs/LIMITATIONS.md), [troubleshooting](docs/TROUBLESHOOTING.md),
+  [architecture](docs/ARCHITECTURE.md), and a [docs index](docs/README.md).
+- Ready-to-copy [`examples/gitlab-ci.yml`](examples/gitlab-ci.yml). The README promised a
+  GitLab pipeline example that did not exist.
+
+### Fixed
+
+- **Suppressing `deleted-tests` was impossible.** It reports on line 1 of the file, and the
+  only documented directive (`veredicto-disable-next-line`) suppresses the line *below*
+  itself — there is no line 0. The documented escape hatch for the rule most likely to
+  block a merge did nothing. File-level findings are now suppressed by a
+  `veredicto-disable <rule>` directive **anywhere in the same file**, and that is what the
+  docs now show.
+- **False positive in `commented-asserts`:** an English sentence ending in a period, such as
+  `// The caller should assert the result is finite before display.`, was read as a
+  commented-out assertion — the full stop counted as a "code token". The heuristic now
+  requires a token that is genuinely code (a comparison operator, or a call, attribute
+  access or index attached to an identifier).
+- **False positive in `deleted-tests` on cross-file moves.** A test case that reappears
+  under the same title in another test file of the same diff is now recognised as moved,
+  not deleted. Consolidating tests no longer trips the only hard rule most people enable
+  first.
+- **Double reporting:** commenting an assertion out fired both `commented-asserts` and the
+  new `gutted-tests`. One change should produce one signal, so `gutted-tests` stands down
+  when the assertion was commented rather than dropped.
+- The `GITHUB_TOKEN` environment variable was missing from the README and both example
+  workflows, so the sticky PR comment was silently skipped for every user who copied them.
+  The log line was `Veredicto reporter: no GITHUB_TOKEN; skipping PR comment.`
+
+### Changed
+
+- `src/index.js` now exports `applySuppressions` and only auto-runs as the entrypoint, so
+  the suppression logic is unit-tested directly instead of through a subprocess.
+- Test suite: 146 → 180 tests, still zero dependencies.
+
+## [0.2.0] — 2026-06-22
+
+- Plugin architecture: `src/registry.js` auto-loads every `src/detectors/*.js`.
+- 10 detectors: `deleted-tests`, `skipped-tests`, `tautological-asserts`,
+  `relaxed-thresholds`, `mass-snapshots`, `weakened-assertions`, `circular-mocks`,
+  `error-swallowing`, `ci-weakening`, `commented-asserts`.
+- Inline suppressions, sticky PR comment, job summary, `findings` / `errors` outputs.
+- GitLab CI adapter, `docs/RULES.md`, `CONTRIBUTING.md`, golden corpus fixtures.
+- `scripts/report.mjs` for running the detectors over a corpus of saved diffs.
+
+## [0.1.0] — 2026-06-22
+
+- First working GitHub Action: 6 detectors, `warn` / `block` modes, annotations, job
+  summary. Node 20, zero dependencies.

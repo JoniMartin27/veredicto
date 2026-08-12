@@ -57,9 +57,10 @@ test('RULES.md does not reference unknown rules in headings', () => {
   }
 });
 
-test('RULES.md covers exactly the 10 expected rules', () => {
+test('RULES.md covers exactly the 11 expected rules', () => {
   const expected = [
     'deleted-tests',
+    'gutted-tests',
     'skipped-tests',
     'tautological-asserts',
     'relaxed-thresholds',
@@ -80,8 +81,12 @@ test('RULES.md covers exactly the 10 expected rules', () => {
 test('RULES.md shows a suppression example for each rule', () => {
   const md = read('docs/RULES.md');
   for (const rule of actualRules()) {
+    // Line-anchored rules document the `-next-line` form; file-level rules
+    // (reported on line 1) document the bare `veredicto-disable <rule>` form,
+    // which is the one that actually works for them.
     assert.ok(
-      md.includes('veredicto-disable-next-line ' + rule),
+      md.includes('veredicto-disable-next-line ' + rule) ||
+        md.includes('veredicto-disable ' + rule),
       `RULES.md should show a suppression example for "${rule}"`
     );
   }

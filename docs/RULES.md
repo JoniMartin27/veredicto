@@ -1,6 +1,6 @@
 # Veredicto rule catalog
 
-Veredicto ships **10 deterministic detectors**. Each runs on your CI runner against
+Veredicto ships **11 deterministic detectors**. Each runs on your CI runner against
 the PR diff only — no source ever leaves your machine, no API key, no LLM. This page
 documents every rule: what it flags, its severity, a snippet that trips it, and how to
 suppress a specific finding when it is a deliberate, reviewed change.
@@ -38,6 +38,18 @@ because Veredicto matches the directive text anywhere on the added line. Stack m
 directives on consecutive lines to suppress several rules. Suppressions key off
 `(file, line, rule)`, so they only silence the exact finding you intend.
 
+**File-level findings.** `deleted-tests` and `gutted-tests` describe a file as a whole,
+so they are reported on line 1 and there is no "line above" to annotate. For those two,
+a directive placed **anywhere in the same file** suppresses them:
+
+```js
+// veredicto-disable deleted-tests — these 3 cases moved to the integration suite
+```
+
+The directive must be on a line the PR **adds** — Veredicto only ever sees the diff, so a
+directive that already existed in the file is invisible to it. If nothing in the file is
+being added, add the comment itself as part of the PR.
+
 ---
 
 ## Rule reference
@@ -45,6 +57,7 @@ directives on consecutive lines to suppress several rules. Suppressions key off
 | Rule | Severity | Flags |
 | --- | --- | --- |
 | [`deleted-tests`](#deleted-tests) | error | Net removal of test cases from a test file |
+| [`gutted-tests`](#gutted-tests) | warning | Assertions removed while the test cases stayed |
 | [`skipped-tests`](#skipped-tests) | warning | `.skip` / `.todo` / `.only` / `xit` / pytest & unittest skip marks |
 | [`tautological-asserts`](#tautological-asserts) | error / warning | Always-true asserts; empty test bodies |
 | [`relaxed-thresholds`](#relaxed-thresholds) | error | Coverage / quality threshold lowered in config |
@@ -78,11 +91,51 @@ Triggers on:
 -  });
 ```
 
-**Suppress:**
+A test case that reappears — same title — in **another** test file of the same diff was
+moved, not deleted, and does not count as a removal.
+
+**Suppress** (file-level rule, so the directive goes anywhere in the file):
 
 ```js
-// veredicto-disable-next-line deleted-tests
-it('removed: replaced by integration suite', () => {});
+// veredicto-disable deleted-tests — replaced by the integration suite in #123
+```
+
+---
+
+### `gutted-tests`
+
+**Severity:** `warning`
+
+Flags a test file whose **assertions** were removed while the **test cases stayed**.
+The suite still reports the same number of green tests, but those tests no longer check
+anything:
+
+```diff
+   it('rejects an expired token', () => {
+-    expect(verify(expired)).toBe(false);
+   });
+```
+
+This is the blind spot the other rules leave open, and it is the cheapest gaming move of
+all — it is a pure deletion, so a reviewer skimming a diff sees a few red lines and moves
+on. [`deleted-tests`](#deleted-tests) counts test *declarations*, and none was removed
+here. [`tautological-asserts`](#tautological-asserts) inspects *added* lines, and this
+diff adds none.
+
+Fires only when all of these hold for one test file: at least one assertion line was
+removed, **no** assertion line was added to replace it, **no** test declaration was
+removed (that is an ordinary deletion, owned by `deleted-tests`), and **no** test
+declaration was added (a rewrite is not a gutting). It recognises `expect(…)`,
+`assert(…)` / `assert.x(…)`, bare Python `assert …`, `self.assertX(…)`, and chai
+`.should`. Commented-out assertions are left to [`commented-asserts`](#commented-asserts).
+
+It is a **soft** signal on purpose: dropping one genuinely redundant assertion during a
+cleanup is a real thing people do, so this never blocks a merge on its own.
+
+**Suppress** (file-level rule, so the directive goes anywhere in the file):
+
+```js
+// veredicto-disable gutted-tests — assertion was a duplicate of the line below
 ```
 
 ---

@@ -69,11 +69,19 @@ function getDiff() {
  *   veredicto-disable <rule>             → suppress <rule> on the next line
  *   ... with no <rule>                   → suppress ALL rules on the next line
  * Suppression keys off (file, line, rule) using the diff's added lines.
+ *
+ * File-level findings (`deleted-tests`, `gutted-tests` and any other rule that
+ * reports the file as a whole) are anchored to line 1, so there is no "line
+ * above" to annotate. For those, a directive placed ANYWHERE in the same file
+ * suppresses them — otherwise a hard, merge-blocking rule would have no escape
+ * hatch at all.
  */
 function applySuppressions(findings, diff) {
   const files = parseDiff(diff);
   // Map: file -> (suppressedLine -> Set<rule> | '*')
   const suppress = new Map();
+  // Map: file -> Set<rule> | '*'   (applies to file-level findings, line 1)
+  const fileWide = new Map();
   const DIRECTIVE = /veredicto-disable(?:-next-line)?(?:\s+([a-z0-9-]+))?/i;
   for (const f of files) {
     for (const a of f.added) {
@@ -87,23 +95,37 @@ function applySuppressions(findings, diff) {
       }
       const existing = perFile.get(target);
       if (m[1]) {
-        if (existing === '*') continue;
-        const set = existing instanceof Set ? existing : new Set();
-        set.add(m[1].toLowerCase());
-        perFile.set(target, set);
+        if (existing !== '*') {
+          const set = existing instanceof Set ? existing : new Set();
+          set.add(m[1].toLowerCase());
+          perFile.set(target, set);
+        }
+        const wide = fileWide.get(f.file);
+        if (wide !== '*') {
+          const set = wide instanceof Set ? wide : new Set();
+          set.add(m[1].toLowerCase());
+          fileWide.set(f.file, set);
+        }
       } else {
         perFile.set(target, '*'); // bare directive suppresses everything
+        fileWide.set(f.file, '*');
       }
     }
   }
   if (!suppress.size) return findings;
   return findings.filter((f) => {
+    const rule = String(f.rule).toLowerCase();
+    if (f.line === 1) {
+      const wide = fileWide.get(f.file);
+      if (wide === '*') return false;
+      if (wide instanceof Set && wide.has(rule)) return false;
+    }
     const perFile = suppress.get(f.file);
     if (!perFile) return true;
     const rules = perFile.get(f.line);
     if (!rules) return true;
     if (rules === '*') return false;
-    return !rules.has(String(f.rule).toLowerCase());
+    return !rules.has(rule);
   });
 }
 
@@ -173,4 +195,8 @@ function main() {
   }
 }
 
-main();
+// Run as the Action entrypoint; stay importable so the suppression logic can be
+// unit-tested without shelling out.
+if (require.main === module) main();
+
+module.exports = { applySuppressions, main };
