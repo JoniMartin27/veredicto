@@ -78,11 +78,20 @@ Kept honest on purpose — a rule that never fires is not precision.
 
 ## What the precision looks like in practice
 
-Across **100 real pull requests** from this author's own repositories, Veredicto flagged
-**2%** and produced **0 false positives**
+Across **213 real merged pull requests** from 15 of this author's repositories, Veredicto
+flagged **0** and produced **0 false positives**
 ([`reports/corpus-own-repos.md`](../reports/corpus-own-repos.md)). Interpret that honestly:
-it is strong evidence the rules do not cry wolf, and weak evidence about recall — a
+it is strong evidence the rules do not cry wolf, and it says **nothing** about recall — a
 disciplined fleet gives a detector very little to find.
+
+Zero findings would also be what a broken detector produces, so read it next to the
+evidence that it fires: 10/10 golden gamed fixtures detected, 187 tests, and deliberately
+gamed pull requests run through the real Action on GitHub's runners.
+
+> **Retracted.** An earlier version of this page cited "100 real pull requests, 2%
+> flagged, 0 false positives", from a June report whose findings were never adjudicated.
+> Both of those findings were **false positives** — prose read as a commented-out
+> assertion — fixed in v0.3.0 and v0.3.3. Do not cite the 2% figure.
 
 ## Things it deliberately does not do
 
