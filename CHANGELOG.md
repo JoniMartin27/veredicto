@@ -3,6 +3,20 @@
 All notable changes to Veredicto. Dates are ISO. The `v0` tag always points at the latest
 `v0.x` release, so `uses: JoniMartin27/veredicto@v0` picks these up automatically.
 
+## [0.3.2] — 2026-08-12
+
+### Fixed
+
+- **In `block` mode the PR comment was never posted.** `post()` is an HTTP round-trip and
+  was called without `await`, so `process.exit(1)` tore the process down with the request
+  still in flight. The mode that fails your check — the one where the reader most needs to
+  know *why* it went red — was the one that silently dropped the explanation. Invisible in
+  `warn` mode, where the process ends on its own and Node waits for the request. Found by
+  validating a real block-mode pull request: the run reported 4 signals while the sticky
+  comment still showed the previous run's 3.
+- `main()` is now async and awaits the reporter; the run fails via `process.exitCode`
+  instead of a hard `process.exit()`, so nothing in flight is cut off. Same failing status.
+
 ## [0.3.1] — 2026-08-12
 
 ### Fixed

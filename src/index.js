@@ -155,7 +155,7 @@ function summary(findings) {
   }
 }
 
-function main() {
+async function main() {
   const mode = (input('mode', 'warn') || 'warn').toLowerCase();
   const diff = getDiff();
   if (!diff.trim()) {
@@ -169,9 +169,15 @@ function main() {
   summary(findings);
 
   // Best-effort PR comment (only if the optional reporter is present).
+  //
+  // The `await` is load-bearing: posting the comment is an HTTP round-trip, and
+  // in block mode this function ends by failing the run. Without awaiting, the
+  // process would tear down with the request still in flight and the comment
+  // would never appear — precisely in the mode where the reader most needs to
+  // know WHY the check went red.
   try {
     const reporter = require('./report/pr-comment');
-    if (reporter && typeof reporter.post === 'function') reporter.post(findings);
+    if (reporter && typeof reporter.post === 'function') await reporter.post(findings);
   } catch {
     /* no reporter module, or it failed — never fatal */
   }
@@ -191,12 +197,19 @@ function main() {
 
   if (mode === 'block' && errors > 0) {
     console.log(`::error::Veredicto blocked the PR: ${errors} hard test-gaming signal(s). Set mode: warn to make this non-blocking.`);
-    process.exit(1);
+    // exitCode rather than exit(): let the process wind down on its own so no
+    // pending work is cut off. Same failing status for the check.
+    process.exitCode = 1;
   }
 }
 
 // Run as the Action entrypoint; stay importable so the suppression logic can be
 // unit-tested without shelling out.
-if (require.main === module) main();
+if (require.main === module) {
+  main().catch((err) => {
+    console.log(`::error::Veredicto crashed: ${err && err.message ? err.message : err}`);
+    process.exitCode = 1;
+  });
+}
 
 module.exports = { applySuppressions, main };
