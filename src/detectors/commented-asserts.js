@@ -31,6 +31,13 @@ const BLOCK_COMMENT = /^\s*\/\*+\s*(.*?)\s*\*+\/\s*$/;
 // `should` is only treated as an assertion in its chai method form
 // (`.should.` / `should(` / `should.`), never as the plain English word.
 //
+// The dot form must be followed by an identifier character: `expect.toBe`,
+// `assert.strictEqual`, `x.should.equal`. A sentence that simply ENDS in the
+// keyword — `/** ...the flat record the CSV columns expect. */` — puts a full
+// stop right after the word and used to look exactly like a method call. That
+// was the only finding in a 213-PR corpus of real merged pull requests, and it
+// was a false positive.
+//
 // The bare Python `assert <expr>` form (`assert x == y`, `assert foo()`,
 // `assert obj.ok`) is only recognised when the asserted expression contains a
 // token that can only be code:
@@ -44,7 +51,7 @@ const BLOCK_COMMENT = /^\s*\/\*+\s*(.*?)\s*\*+\/\s*$/;
 // longer trips the detector.
 const CODE_TOKEN = /[=!<>]=|[<>]|\w\(|\w\.\w|\w\[/;
 const ASSERT_BARE_PY = /\bassert\b\s+(\w[^\n]*)$/;
-const ASSERT_CALL = /\bexpect\s*[(.]|\bassert\b\s*[(.]|\.should\.|\bshould\s*[(.]/;
+const ASSERT_CALL = /\bexpect\s*(?:\(|\.\w)|\bassert\b\s*(?:\(|\.\w)|\.should\.\w|\bshould\s*(?:\(|\.\w)/;
 
 function detect(files) {
   const findings = [];

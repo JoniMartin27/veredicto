@@ -129,6 +129,36 @@ test('prose that merely ends in a period is not an assertion', () => {
   assert.strictEqual(detector.detect(parseDiff(diff)).length, 0);
 });
 
+test('a sentence ending in the keyword itself is not an assertion', () => {
+  // Found in the wild: the single finding across a 213-PR corpus of real
+  // merged pull requests was this JSDoc line, and it was a false positive.
+  // The full stop sat right after `expect`, which read as `expect.<method>`.
+  const diff = [
+    'diff --git a/src/routes/export.ts b/src/routes/export.ts',
+    '--- a/src/routes/export.ts',
+    '+++ b/src/routes/export.ts',
+    '@@ -1,3 +1,3 @@',
+    '+/** Flatten a Trace into the flat record the CSV columns expect. */',
+    '+// Trim the payload down to what the downstream consumers expect.',
+    '+// There is nothing left here to assert.',
+    '+// Whatever the caller should.',
+  ].join('\n');
+  assert.strictEqual(detector.detect(parseDiff(diff)).length, 0);
+});
+
+test('the method-call form is still flagged after the dot fix', () => {
+  const diff = [
+    'diff --git a/test/api.test.js b/test/api.test.js',
+    '--- a/test/api.test.js',
+    '+++ b/test/api.test.js',
+    '@@ -1,4 +1,4 @@',
+    '+  // expect.assertions(2)',
+    '+  // assert.strictEqual(total, 42)',
+    '+  // user.should.equal(expected)',
+  ].join('\n');
+  assert.strictEqual(detector.detect(parseDiff(diff)).length, 3);
+});
+
 test('a real bare assert with code in it is still flagged', () => {
   const diff = [
     'diff --git a/test_api.py b/test_api.py',

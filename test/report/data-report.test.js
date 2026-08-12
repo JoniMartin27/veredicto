@@ -48,6 +48,32 @@ test('buildReport: all-clean corpus => 0% flagged', () => {
   assert.strictEqual(stats.pct, 0);
 });
 
+test('buildReport: a rate below 0.5% never reads as 0% in the headline', () => {
+  // One finding in 213 real pull requests rounds to zero, and the headline then
+  // contradicted its own count: "0% showed test-gaming signals (1/213 flagged)".
+  const units = [{ name: 'gaming.diff', diff: gamingDiff() }];
+  for (let i = 0; i < 212; i++) units.push({ name: `clean-${i}.diff`, diff: cleanDiff() });
+
+  const stats = report.buildReport(units);
+  assert.strictEqual(stats.total, 213);
+  assert.strictEqual(stats.flagged, 1);
+  assert.strictEqual(stats.pct, 0);
+  assert.strictEqual(stats.pctLabel, '0.5');
+
+  const md = report.renderMarkdown(stats);
+  assert.ok(md.includes('0.5% showed test-gaming signals'), md.split('\n')[2]);
+  assert.ok(!md.includes('0% showed'), 'a corpus with a finding must not read as 0%');
+});
+
+test('buildReport: a genuinely clean corpus still reads as a flat 0%', () => {
+  const stats = report.buildReport([
+    { name: 'a.diff', diff: cleanDiff() },
+    { name: 'b.diff', diff: cleanDiff() },
+  ]);
+  assert.strictEqual(stats.pctLabel, '0');
+  assert.ok(report.renderMarkdown(stats).includes('0% showed test-gaming signals'));
+});
+
 test('renderMarkdown: headline carries the percentage and counts', () => {
   const md = report.renderMarkdown(
     report.buildReport([

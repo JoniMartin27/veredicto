@@ -130,18 +130,25 @@ export function buildReport(units) {
 
   const pct = total === 0 ? 0 : Math.round((flagged / total) * 100);
 
-  return { total, flagged, pct, byRule, flaggedUnits };
+  // A rate under 0.5% rounds to zero, which made the headline contradict its own
+  // count — "0% showed test-gaming signals (1/213 flagged)". A corpus with any
+  // finding at all must never read as 0%, so fall back to one decimal.
+  const ratio = total === 0 ? 0 : (flagged / total) * 100;
+  const pctLabel = flagged > 0 && pct === 0 ? ratio.toFixed(1) : String(pct);
+
+  return { total, flagged, pct, pctLabel, byRule, flaggedUnits };
 }
 
 /** Render the aggregated stats as a markdown document. */
 export function renderMarkdown(stats) {
-  const { total, flagged, pct, byRule, flaggedUnits } = stats;
+  const { total, flagged, pct, pctLabel, byRule, flaggedUnits } = stats;
+  const label = pctLabel ?? String(pct);
   const lines = [];
 
   lines.push('# Veredicto — test-gaming corpus report');
   lines.push('');
   lines.push(
-    `**Analyzed ${total} PRs/diffs — ${pct}% showed test-gaming signals** ` +
+    `**Analyzed ${total} PRs/diffs — ${label}% showed test-gaming signals** ` +
       `(${flagged}/${total} flagged).`
   );
   lines.push('');

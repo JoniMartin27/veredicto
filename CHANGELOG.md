@@ -3,6 +3,35 @@
 All notable changes to Veredicto. Dates are ISO. The `v0` tag always points at the latest
 `v0.x` release, so `uses: JoniMartin27/veredicto@v0` picks these up automatically.
 
+## [0.3.3] — 2026-08-12
+
+Found by rebuilding the precision corpus from scratch — 213 real merged pull requests
+across 15 repositories — and adjudicating every finding by hand instead of trusting a
+report generated three releases ago.
+
+### Fixed
+
+- **`commented-asserts` read a sentence ending in `expect` as a method call.** The rule
+  accepted the keyword followed by a dot (`expect.toBe`, `assert.strictEqual`), and an
+  English sentence that *ends* in the keyword puts a full stop in exactly that position:
+  `/** Flatten a Trace into the flat record the CSV columns expect. */`. That JSDoc line
+  was the **only** finding across the whole corpus, and it was a false positive. The dot
+  form now requires an identifier character after it. The v0.3.0 fix had covered prose
+  ending in a period *after* the keyword; this is the case where the keyword itself is
+  the last word.
+- **The report headline could contradict its own count.** One finding in 213 pull
+  requests rounds to zero, printing `0% showed test-gaming signals (1/213 flagged)`. A
+  corpus with any finding now falls back to one decimal (`0.5%`); a genuinely clean
+  corpus still reads as a flat `0%`.
+
+### Changed
+
+- `reports/corpus-own-repos.md` re-measured and rewritten: **213 PRs, 0 flagged, 0 false
+  positives**, with the fetch method, the adjudication, and what the corpus *cannot* tell
+  you. It also retracts the June figure — the "2% showed test-gaming" line was 2% false
+  positives, both since fixed, and must not be cited.
+- Test suite: 180 → 187 tests, still zero dependencies.
+
 ## [0.3.2] — 2026-08-12
 
 ### Fixed
