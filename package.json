@@ -1,8 +1,8 @@
 {
   "name": "veredicto",
-  "version": "0.3.3",
-  "description": "The CI check that catches when an AI agent games your tests — deterministic, no API key.",
-  "license": "MIT",
+  "version": "0.4.0",
+  "description": "The CI check that catches when an AI agent games your tests — deterministic, offline, no API key. Commercial, source-available.",
+  "license": "SEE LICENSE IN LICENSE",
   "author": "Jonathan Martín (Fervon)",
   "homepage": "https://fervon.dev/veredicto/",
   "repository": {

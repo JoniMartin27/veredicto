@@ -13,6 +13,7 @@ const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const { analyze } = require('./registry');
 const { parseDiff } = require('./diff');
+const { checkEntitlement, entitlementMessage, STORE_URL } = require('./entitlement');
 
 function input(name, def) {
   const v = process.env['INPUT_' + name.toUpperCase().replace(/-/g, '_')];
@@ -146,7 +147,7 @@ function summary(findings) {
     for (const f of findings) {
       lines.push(`| \`${f.rule}\` | \`${f.file}\` | ${f.line} | ${f.message.replace(/\|/g, '\\|')} |`);
     }
-    lines.push('', '_Free static detection. The diff-vs-claim LLM judge + signed report is the Pro tier → https://fervon.dev/veredicto/_');
+    lines.push('', '_Deterministic, offline test-integrity checks. Nothing about this diff left the runner. → https://fervon.dev/veredicto/_');
   }
   try {
     fs.appendFileSync(path, lines.join('\n') + '\n');
@@ -156,6 +157,23 @@ function summary(findings) {
 }
 
 async function main() {
+  // The licence gate runs FIRST — before reading the diff, before analysing, and
+  // before any output that could be mistaken for a clean result. An unlicensed
+  // run must never look like "Veredicto ran and found nothing"; it fails the step
+  // and says why. Verification is entirely offline (see src/entitlement.js).
+  const ent = checkEntitlement();
+  if (!ent.ok) {
+    console.log(`::error::${entitlementMessage(ent.reason)}`);
+    process.exitCode = 1;
+    return;
+  }
+  if (ent.exp) {
+    const dias = Math.ceil((Date.parse(ent.exp) - Date.now()) / 86400000);
+    if (dias <= 14) {
+      console.log(`::warning::Veredicto licence for ${ent.repo} expires in ${dias} day(s), on ${ent.exp.slice(0, 10)}. Renew at ${STORE_URL}`);
+    }
+  }
+
   const mode = (input('mode', 'warn') || 'warn').toLowerCase();
   const diff = getDiff();
   if (!diff.trim()) {

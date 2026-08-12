@@ -31,10 +31,11 @@ Veredicto flagged none of them, and that is not a bug in the detectors. There wa
 to see: no deletion, no skip, no mock, no tautology. The suites were well-formed, readable,
 and wrong. One agent even wrote a comment noting that the expected value "exhibits the bug".
 
-**This is the honest boundary of the free tier.** Catching the semantic mirror requires
-comparing the tests against the *intent* — the contract, the PR description, the ticket —
-not against the diff's syntax. That is what the Pro tier's diff-vs-claim judge is for, and
-it is why the free tier is deliberately described as a lint, not a proof.
+**This is the honest boundary of what Veredicto is.** Catching the semantic mirror
+requires comparing the tests against the *intent* — the contract, the PR description, the
+ticket — not against the diff's syntax. Veredicto does not do that, and there is no other
+edition of it that does. It is a lint, deliberately, not a proof. If you need the
+intent-level check, that is a human reviewer or mutation testing, not this tool.
 
 ## It is not mutation testing
 
@@ -96,8 +97,9 @@ gamed pull requests run through the real Action on GitHub's runners.
 ## Things it deliberately does not do
 
 - **No LLM, no network, no API key.** Nothing about your code leaves the runner. That is a
-  hard design constraint, not a milestone — it is why the tool can be free and why it can
-  run on private repositories without a trust conversation.
+  hard design constraint, not a milestone — it is why the tool can run on private
+  repositories without a trust conversation. The licence check keeps that promise too: it
+  verifies a signed key locally and contacts nothing.
 - **No opinion on coverage.** Veredicto flags coverage thresholds being *lowered*. It has
   no view on what your coverage should be.
 - **No opinion on test quality, style, or naming.** Other tools do that.
@@ -106,5 +108,5 @@ gamed pull requests run through the real Action on GitHub's runners.
 ## If you want a stronger guarantee
 
 Layer it. In increasing order of cost and strength: Veredicto on every PR → mutation
-testing on a schedule or on the packages that matter → an intent-level review (human, or
-the Pro diff-vs-claim judge) on changes to critical paths.
+testing on a schedule or on the packages that matter → a human intent-level review on
+changes to critical paths.

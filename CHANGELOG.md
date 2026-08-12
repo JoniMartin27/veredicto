@@ -3,6 +3,45 @@
 All notable changes to Veredicto. Dates are ISO. The `v0` tag always points at the latest
 `v0.x` release, so `uses: JoniMartin27/veredicto@v0` picks these up automatically.
 
+## [0.4.0] — 2026-08-12
+
+**Veredicto is now paid, source-available software.** There is no free tier and there is
+no Pro tier — there is one product, $19 per repository per month, self-serve.
+
+### Licensing
+
+- **The MIT grant is not withdrawn.** Every release up to and including v0.3.3 stays MIT,
+  irrevocably. This licence governs v0.4.0 onwards. The source remains public so you can
+  audit what runs inside your CI; running it now requires a key.
+- **New `src/entitlement.js` — the licence check, verified 100% offline.** An Ed25519
+  signature checked locally against a public key embedded in the source. No licence
+  server, no phone-home, no telemetry: on a runner with no egress it still works. A tool
+  that reads your diffs has no business reporting on them, and that constraint applies to
+  its own billing too.
+- Keys are issued per repository, or as `owner/*` for everything one owner has. They carry
+  an expiry, and every run in the last 14 days before it lapses prints a warning with the
+  date — a licence should never die silently mid-week.
+- **The gate is FAIL-CLOSED and runs before anything else** — before the diff is read,
+  before any analysis, before any output. An unlicensed run fails the step and says why.
+  It must never resemble "Veredicto ran and your PR is clean", which is the one failure
+  mode a paid check cannot have. There is an end-to-end test that asserts precisely this,
+  and it dies against a mutant where the gate is evaluated but does not block.
+- New `scripts/sign-license.mjs` to mint keys after a sale. The private half never leaves
+  the author's machine and is gitignored.
+
+### Removed
+
+- Every reference to a "Free tier" and a "Pro tier", in the README, the docs, the job
+  summary and the pull-request comment. The diff-vs-claim LLM judge was advertised in the
+  footer of every comment Veredicto posted and **did not exist as code**. Advertising it
+  was the honest-positioning rule this project holds itself to, broken in its own output.
+
+### Note on forked pull requests
+
+GitHub does not expose secrets to workflows triggered by `pull_request` from a fork, so a
+licensed run is not possible there without `pull_request_target`. Documented in
+[TROUBLESHOOTING](docs/TROUBLESHOOTING.md).
+
 ## [0.3.3] — 2026-08-12
 
 Found by rebuilding the precision corpus from scratch — 213 real merged pull requests

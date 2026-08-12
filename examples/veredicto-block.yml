@@ -31,6 +31,11 @@ jobs:
         with:
           mode: block # fail the check on hard (error) signals
         env:
+          # Your licence key, stored as a repository secret. Veredicto is paid
+          # software: without a valid key the step fails with an explanation
+          # rather than running. The key is verified offline and never sent
+          # anywhere. Buy or renew one at https://fervon.dev/veredicto/
+          VEREDICTO_LICENSE: ${{ secrets.VEREDICTO_LICENSE }}
           # Required for the sticky PR comment. Without it the reporter logs
           # "no GITHUB_TOKEN; skipping PR comment" and you only get annotations.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

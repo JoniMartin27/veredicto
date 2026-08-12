@@ -1,5 +1,5 @@
 name: 'Veredicto'
-description: 'Catch AI agents gaming your tests — deleted/.skip tests, tautological asserts, relaxed thresholds. Deterministic, no API key.'
+description: 'Catch AI agents gaming your tests — deleted/.skip tests, gutted tests, tautological asserts, relaxed thresholds. Deterministic, offline, no API key.'
 author: 'Fervon'
 branding:
   icon: 'check-circle'
@@ -9,6 +9,13 @@ inputs:
     description: '"warn" (comment only, default) or "block" (fail the check on hard signals).'
     required: false
     default: 'warn'
+  license:
+    description: >-
+      Your Veredicto licence key. Prefer passing it as the VEREDICTO_LICENSE
+      environment variable from a secret; this input exists for workflows that
+      cannot set env. Veredicto is paid software and will not run without it.
+      The key is verified offline — it is never sent anywhere.
+    required: false
 runs:
   using: 'node20'
   main: 'src/index.js'

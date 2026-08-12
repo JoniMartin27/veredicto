@@ -25,3 +25,10 @@ jobs:
       - uses: ./
         with:
           mode: warn
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Veredicto is paid software and refuses to run without a licence key.
+          # This repository IS Veredicto, so it uses the development bypass rather
+          # than a key it would have to issue to itself. Customers use a key; see
+          # docs/GETTING-STARTED.md.
+          VEREDICTO_DEV: '1'

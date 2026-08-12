@@ -1,21 +1,60 @@
-MIT License
+Veredicto — Licence
 
-Copyright (c) 2026 Jonathan Martín (Fervon)
+Copyright (c) 2026 Jonathan Martín (Fervon). All rights reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Veredicto is source-available commercial software. The source is published so you
+can read exactly what runs inside your CI — that is the point of a tool that
+inspects your diffs — but reading it is not the same as being licensed to run it.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+
+VERSIONS UP TO AND INCLUDING v0.3.3 REMAIN MIT
+
+Every release up to and including v0.3.3, and every commit up to and including
+52f3544, was published under the MIT licence. That grant is irrevocable and is
+not withdrawn here: anyone who obtained that code keeps their MIT rights to it,
+forever. This licence governs v0.4.0 onwards only.
+
+
+WHAT YOU MAY DO WITHOUT A LICENCE KEY
+
+  - Read, clone and fork this repository.
+  - Run the test suite and evaluate the code locally.
+  - Quote it, review it, write about it, teach from it.
+  - Submit contributions (see CONTRIBUTING.md).
+
+WHAT REQUIRES A VALID LICENCE KEY
+
+  - Running Veredicto against a repository, in CI or anywhere else, whether or
+    not that repository is public and whether or not the run is automated.
+
+A key is issued per repository, or per owner. Keys are sold self-serve at
+https://fervon.dev/veredicto/ — there is no sales process to sit through.
+
+WHAT YOU MAY NOT DO
+
+  - Remove, disable, or circumvent the licence check in src/entitlement.js, or
+    distribute a modified copy with it removed or weakened.
+  - Redistribute, sublicense, resell or host this software as a service.
+  - Use it to build a competing product.
+
+The licence check is deliberately simple and entirely offline: it verifies a
+signed key locally and never contacts a server, because nothing about your code
+should leave your runner. It is not copy protection. Anyone determined to strip
+it out can. The enforcement here is legal, and the check exists so that honest
+users are never in any doubt about where they stand.
+
+
+NO WARRANTY
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHOR BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Veredicto reports signals, not verdicts about whether your tests are good. It
+does not catch semantic test-gaming; see docs/LIMITATIONS.md, which is honest
+about what it misses. Do not rely on it as your only check.
+
+Questions about licensing: https://fervon.dev/veredicto/

@@ -8,8 +8,9 @@ is one input, two outputs, and a handful of environment variables.
 | Input | Values | Default | Effect |
 | --- | --- | --- | --- |
 | `mode` | `warn` \| `block` | `warn` | `warn` annotates and comments but always exits 0. `block` exits 1 when at least one **hard** (`error`) signal survives suppression. Soft signals never fail the check in either mode. |
+| `license` | licence key | — | Fallback for workflows that cannot set environment variables. Prefer the `VEREDICTO_LICENSE` env var from a secret: an input can end up rendered in logs and in the workflow file, a secret does not. |
 
-The value is case-insensitive; anything that is not `block` behaves as `warn`.
+The `mode` value is case-insensitive; anything that is not `block` behaves as `warn`.
 
 ```yaml
 - uses: JoniMartin27/veredicto@v0
@@ -41,11 +42,12 @@ Written to `$GITHUB_OUTPUT`, so later steps can branch on them.
 
 | Variable | Required | Purpose |
 | --- | --- | --- |
+| `VEREDICTO_LICENSE` | **always** | Your licence key. Verified offline against an embedded Ed25519 public key — never transmitted. Without a valid key the run fails immediately and analyses nothing. |
+| `GITHUB_REPOSITORY` | **always** | `owner/repo`. Used for the comment API call **and** to check which repository the licence covers. On GitLab, set it to your `$CI_PROJECT_PATH`. |
 | `GITHUB_TOKEN` | for the PR comment | Authenticates the sticky comment. `GH_TOKEN` and the `github-token` input are accepted as aliases. Without any of them the reporter logs `no GITHUB_TOKEN; skipping PR comment` and everything else still works. |
 | `GITHUB_EVENT_PATH` | set by Actions | Source of the PR's `base.sha` / `head.sha` and the PR number. |
 | `GITHUB_STEP_SUMMARY` | set by Actions | Where the job summary is appended. |
 | `GITHUB_OUTPUT` | set by Actions | Where `findings` / `errors` are written. |
-| `GITHUB_REPOSITORY` | set by Actions | `owner/repo` for the comment API call. |
 | `GITLAB_CI`, `CI_MERGE_REQUEST_DIFF_BASE_SHA`, `CI_COMMIT_BEFORE_SHA` | GitLab only | Select the GitLab diff source. See below. |
 
 ## Permissions

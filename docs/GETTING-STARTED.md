@@ -14,7 +14,29 @@ Veredicto reads the diff and names them. It does not judge whether your tests ar
 it catches the specific, mechanical ways a suite gets gamed. See [Limitations](LIMITATIONS.md)
 for the honest boundary.
 
-## 2. Install
+## 2. Get a licence key and store it
+
+Veredicto is paid software — $19 per repository per month, self-serve at
+<https://fervon.dev/veredicto/>. There is no free tier. Buying gives you a key that
+looks like `VEREDICTO.eyJwbGFu….Zm9v…`.
+
+Store it as a repository secret, **not** in the workflow file:
+
+- **Settings → Secrets and variables → Actions → New repository secret**
+- Name: `VEREDICTO_LICENSE`
+- Value: the key
+
+Two things worth knowing before you paste it anywhere:
+
+- The key is verified **offline**. Veredicto checks an Ed25519 signature locally and
+  contacts no server — not on the first run, not ever. You can read the whole check in
+  [`src/entitlement.js`](../src/entitlement.js). This matters because the tool reads your
+  diffs; it would be absurd for it to phone home about them.
+- The key is issued for **one repository** (or for `owner/*`, covering everything you
+  own) and carries an expiry. In the last 14 days before it lapses, every run prints a
+  warning with the date, so a licence never dies silently in the middle of a busy week.
+
+## 3. Install
 
 Create `.github/workflows/veredicto.yml` in your repository:
 
@@ -40,13 +62,18 @@ jobs:
         with:
           mode: warn
         env:
+          VEREDICTO_LICENSE: ${{ secrets.VEREDICTO_LICENSE }} # required to run at all
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # required for the PR comment
 ```
 
-Two lines people forget, and what happens without them:
+Three lines people forget, and what happens without them:
 
 - **`fetch-depth: 0`** — without it the checkout is shallow, the base commit may be
   missing, and Veredicto silently analyses far less than the real diff.
+- **`env: VEREDICTO_LICENSE`** — without it the step fails immediately and tells you why.
+  It does not fall back to analysing anything, on purpose: a run that finds nothing
+  because it never ran is indistinguishable from a clean PR, and that is the one failure
+  mode a paid check must not have.
 - **`env: GITHUB_TOKEN`** — without it everything still runs, but the sticky PR comment is
   skipped and you only get inline annotations. The log says
   `Veredicto reporter: no GITHUB_TOKEN; skipping PR comment.`
@@ -54,7 +81,7 @@ Two lines people forget, and what happens without them:
 Ready-to-copy files live in [`examples/`](../examples/) — `veredicto-warn.yml` and
 `veredicto-block.yml`.
 
-## 3. What you get on a pull request
+## 4. What you get on a pull request
 
 Three surfaces, from most to least visible:
 
@@ -75,7 +102,7 @@ sits next to the code that caused it.
 
 **A job summary** on the Actions run, for the record even after the PR is merged.
 
-## 4. Reading the result
+## 5. Reading the result
 
 Every finding has a severity:
 
@@ -91,7 +118,7 @@ If a finding is wrong or the change was deliberate and reviewed, suppress that o
 with an inline directive — see [suppressing a finding](RULES.md#suppressing-a-finding).
 Suppressing is better than deleting the workflow: it leaves the reason in the code.
 
-## 5. Graduating to blocking
+## 6. Graduating to blocking
 
 Run in `warn` for a couple of weeks. When the findings look right for *your* codebase:
 
@@ -102,7 +129,7 @@ Run in `warn` for a couple of weeks. When the findings look right for *your* cod
 
 You can always go back. Nothing about Veredicto is stateful — it only ever reads a diff.
 
-## 6. GitLab
+## 7. GitLab
 
 The same code runs on GitLab CI. In a merge-request pipeline it detects
 `CI_MERGE_REQUEST_DIFF_BASE_SHA` and diffs `base..HEAD` with no extra configuration. See

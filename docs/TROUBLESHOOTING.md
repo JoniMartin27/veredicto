@@ -2,6 +2,45 @@
 
 Symptoms, the cause, and the fix. Each entry names the log line you would actually see.
 
+## The step fails immediately with a licence error
+
+**Look for this in the log:**
+
+```
+Veredicto: no licence key.
+Veredicto: licence expired on 2026-08-01.
+Veredicto: licence was issued for acme/web, not acme/api.
+```
+
+**Cause:** Veredicto is paid software and refuses to run unlicensed. It fails loudly
+rather than doing nothing quietly — a check that silently analyses no code is
+indistinguishable from a clean pull request, which is the one outcome a paid gate must
+never produce.
+
+**Fix, per message:**
+
+- *no licence key* — the secret is missing or not passed through. The secret must be
+  named in the step's `env`; defining it in repository settings is not enough:
+
+  ```yaml
+  - uses: JoniMartin27/veredicto@v0
+    env:
+      VEREDICTO_LICENSE: ${{ secrets.VEREDICTO_LICENSE }}
+  ```
+
+  Note that secrets are **not** available to workflows triggered by `pull_request` from a
+  forked repository. That is a GitHub rule, not a Veredicto one. Use `pull_request_target`
+  with care, or accept that fork PRs are not checked.
+
+- *licence expired* — renew at <https://fervon.dev/veredicto/> and replace the secret.
+  Runs warn about this daily for the 14 days before expiry, so it should not surprise you.
+
+- *licence was issued for X, not Y* — the key is bound to one repository. Buy a key for
+  that repository, or an `owner/*` key covering everything you own.
+
+- *licence key signature does not verify* — the value was truncated or mangled on paste.
+  Re-copy it whole; it is one line with exactly two dots.
+
 ## The check runs but finds nothing on a PR that obviously games the tests
 
 **Look for this in the log:**

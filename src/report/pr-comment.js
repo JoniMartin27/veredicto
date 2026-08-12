@@ -107,7 +107,7 @@ function buildBody(findings) {
 
   lines.push(
     '',
-    `_Free static detection by [Veredicto](${LANDING}). The diff-vs-claim LLM judge + signed report is the Pro tier._`,
+    `_Checked by [Veredicto](${LANDING}) — deterministic and offline. Nothing about this diff left the runner._`,
   );
   return lines.join('\n');
 }

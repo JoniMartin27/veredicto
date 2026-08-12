@@ -2,3 +2,7 @@ node_modules/
 *.log
 .DS_Store
 .env
+
+# La clave PRIVADA de firma de licencias. Si esto se sube, cualquiera
+# puede emitirse licencias gratis y el producto deja de ser de pago.
+scripts/keys/

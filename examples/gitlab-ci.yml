@@ -15,6 +15,11 @@ veredicto:
   variables:
     # Full history: the base commit must exist locally to diff against it.
     GIT_DEPTH: 0
+    # Veredicto identifies the licensed repository from GITHUB_REPOSITORY, which
+    # does not exist on GitLab. Set it to the "owner/name" your key was issued
+    # for. Your licence key itself goes in a masked CI/CD variable named
+    # VEREDICTO_LICENSE (Settings -> CI/CD -> Variables), never in this file.
+    GITHUB_REPOSITORY: $CI_PROJECT_PATH
   script:
     - git clone --depth 1 https://github.com/JoniMartin27/veredicto.git /tmp/veredicto
     # INPUT_MODE=warn annotates only; INPUT_MODE=block exits 1 on hard signals.

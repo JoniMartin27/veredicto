@@ -10,7 +10,11 @@ green without doing the work — **deterministic, instant, no API key, no LLM**.
 > In **30% of runs**, frontier models gamed their own evaluation ([METR](https://metr.org)).
 > The pain is measured. Veredicto is the detector.
 
-🔗 **Landing & Pro tier:** https://fervon.dev/veredicto/ · part of [Fervon](https://fervon.dev)
+🔗 **Buy a licence:** https://fervon.dev/veredicto/ · part of [Fervon](https://fervon.dev)
+
+> **Veredicto is paid, source-available software** — $19 per repository per month,
+> self-serve. The source is here so you can read exactly what runs inside your CI;
+> running it needs a licence key. There is no free tier. See [Licensing](#licensing).
 
 ---
 
@@ -98,6 +102,8 @@ jobs:
         with:
           mode: warn              # "warn" (default, comment only) or "block"
         env:
+          # Your licence key. Veredicto refuses to run without it.
+          VEREDICTO_LICENSE: ${{ secrets.VEREDICTO_LICENSE }}
           # Required for the sticky PR comment; without it the reporter is skipped.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
@@ -105,9 +111,11 @@ jobs:
 - **`warn`** (default): annotates the PR with what it found; never blocks.
 - **`block`**: fails the check when there are *hard* signals. Start with `warn`.
 
-`fetch-depth: 0` and the `GITHUB_TOKEN` env are both load-bearing: without the first the
-diff is truncated, without the second the PR comment is silently skipped. Outputs
-`findings` and `errors` for downstream steps.
+Three things are load-bearing here: without `fetch-depth: 0` the diff is truncated,
+without `GITHUB_TOKEN` the PR comment is silently skipped, and without
+`VEREDICTO_LICENSE` the step fails with an explanation rather than running. That
+last one is deliberate — an unlicensed run must never look like a clean result.
+Outputs `findings` and `errors` for downstream steps.
 
 ## Documentation
 
@@ -125,15 +133,24 @@ diff is truncated, without the second the PR comment is silently skipped. Output
 
 CodeRabbit reviews quality with a paid LLM; GitHub validates security (CodeQL,
 secret scanning). **Neither checks test integrity.** Veredicto does one thing —
-detect when the tests were gamed — and does it deterministically and for free.
+detect when the tests were gamed — and does it deterministically, in under a
+second, without sending your diff to anyone.
 
-## Free vs Pro
+## Licensing
 
-- **Free (this repo, MIT):** all the static detectors above, forever, public &
-  private repos.
-- **Pro — $19/repo/mo:** an LLM judge that verifies the PR's *claims* against what
-  the diff actually does (diff-vs-claim) + an exportable, signed verification
-  report. Bring your own API key. → https://fervon.dev/veredicto/
+**$19 per repository per month**, self-serve at https://fervon.dev/veredicto/.
+An owner-wide key covering every repository you own is also available.
+
+- The **source is public** so you can audit what runs in your CI. That is not the
+  same as a licence to run it — see [LICENSE](LICENSE).
+- **Releases up to and including v0.3.3 were MIT and stay MIT.** That grant is
+  irrevocable. This licence applies from v0.4.0 onwards.
+- The key is verified **entirely offline**, with the public half of an Ed25519
+  keypair embedded in [`src/entitlement.js`](src/entitlement.js). No licence
+  server, no phone-home, no telemetry — on a runner with no egress it still works.
+  You can read the check yourself; it is 150 lines.
+- Keys are per repository (or `owner/*`) and carry an expiry. Veredicto warns in
+  the run log for the last 14 days before one lapses.
 
 ## Development
 
@@ -157,4 +174,7 @@ node scripts/report.mjs ./path/to/diffs   # or: git diff | node scripts/report.m
 
 ## License
 
-MIT © 2026 Jonathan Martín · [Fervon](https://fervon.dev) — *forged red-hot*.
+Source-available commercial software — see [LICENSE](LICENSE). Versions up to and
+including v0.3.3 remain MIT.
+
+© 2026 Jonathan Martín · [Fervon](https://fervon.dev) — *forged red-hot*.
