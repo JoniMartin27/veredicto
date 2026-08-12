@@ -135,9 +135,24 @@ node --test test/detectors/<rule>.test.js
 ## Documentation
 
 When you add a rule, also add a section to [`docs/RULES.md`](docs/RULES.md) following the
-existing template: what it detects, severity, a snippet that triggers it, and the
-`veredicto-disable-next-line <rule>` suppression example. Keep the summary table at the
-top in sync.
+existing template: what it detects, severity, a snippet that triggers it, and a suppression
+example. Keep the summary table at the top in sync.
+
+Use the suppression form that actually works for your rule:
+
+- **Line-anchored finding** (you report the offending line) →
+  `// veredicto-disable-next-line <rule>`.
+- **File-level finding** (you report `line: 1`, like `deleted-tests` / `gutted-tests`) →
+  `// veredicto-disable <rule>`, which applies anywhere in the file. The `-next-line` form
+  cannot anchor to line 1 and would leave your rule impossible to suppress.
+
+This is not optional bookkeeping: [`test/rules-docs.test.js`](test/rules-docs.test.js)
+fails the build if a detector has no section in `RULES.md`, if `RULES.md` documents a rule
+that does not exist, or if a rule has no suppression example. The docs cannot drift from
+the code.
+
+If your rule could describe the same edit as an existing one, decide which rule owns it and
+make the other stand down — one change should produce one signal, not two.
 
 ## Checklist before opening a PR
 
